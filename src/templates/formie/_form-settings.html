@@ -1,0 +1,16 @@
+{% import '_includes/forms' as forms %}
+{% import 'verbb-base/_macros' as macros %}
+
+{% set handle = integration.handle %}
+{% set displayName = integration.displayName() %}
+{% set triggerOnEvents = form.settings.integrations[handle].triggerOnEvents ?? [] %}
+
+{{ forms.selectizeField({
+	multi: true,
+	label: 'Trigger on Event' | t('formie-integration-triggers'),
+	instructions: 'Trigger {name} on the selected event(s) instead of after submitting the form.' | t('formie-integration-triggers', { name: displayName }),
+	id: 'trigger-on-evnet',
+	name: 'triggerOnEvents',
+	options: triggerOptions,
+	values: triggerOnEvents
+}) }}
