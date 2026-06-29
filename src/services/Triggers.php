@@ -4,6 +4,7 @@ namespace onstuimig\formieintegrationtriggers\services;
 
 use onstuimig\formieintegrationtriggers\base\EventTrigger;
 use onstuimig\formieintegrationtriggers\events\RegisterTriggersEvent;
+use verbb\formie\base\Integration;
 use yii\base\Component;
 
 /**
@@ -14,8 +15,10 @@ class Triggers extends Component
 	public const EVENT_REGISTER_TRIGGERS = 'registerTriggers';
 
 	private array $_triggers = [];
+
+	private array $_triggerObjects = [];
 	
-	/** @return EventTrigger[] */
+	/** @return string[] */
 	public function getTriggers(): array
 	{
 		if (count($this->_triggers)) {
@@ -33,14 +36,43 @@ class Triggers extends Component
 		$event->triggers = array_unique($event->triggers);
 
 		foreach ($event->triggers as $class) {
-			$this->_triggers[str_replace('\\', '.', $class)] = new $class();
+			$this->_triggers[str_replace('\\', '.', $class)] = $class;
 		}
 		
 		return $this->_triggers;
 	}
 
-	public function getTrigger(string $class): ?EventTrigger
+	public function getTrigger(string $handle, ?Integration $integration = null): ?EventTrigger
 	{
-		return $this->getTriggers()[$class] ?? null;
+		$integrationHandle = '_global_';
+
+		if($integration) {
+			$integrationHandle = $integration->handle;
+		}
+
+		if(isset($this->_triggerObjects[$handle][$integrationHandle])) {
+			return $this->_triggerObjects[$handle][$integrationHandle];
+		}
+
+		$class = str_replace('.', '\\', $handle);
+
+		if(!in_array($class, $this->getTriggers())) {
+			return null;
+		}
+
+		$trigger = null;
+
+		try {
+			/** @var EventTrigger */
+			$trigger = new $class();
+
+			if($integration) {
+				$trigger->init($integration);
+			}
+		} catch (\Throwable $th) { }
+
+		$this->_triggerObjects[$handle][$integrationHandle] = $trigger;
+
+		return $trigger;
 	}
 }

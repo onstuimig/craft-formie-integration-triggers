@@ -50,10 +50,12 @@ trait EventTriggers
 				'value' => '',
 			],
 		];
-		foreach ($triggers as $triggerClass => $trigger) {
+		foreach ($triggers as $triggerHandle => $triggerClass) {
+			$trigger = FormieIntegrationTriggers::getInstance()->triggers->getTrigger($triggerHandle);
+			if(!$trigger) continue;
 			$triggerOptions[] = [
 				'label' => $trigger->displayName(),
-				'value' => $triggerClass,
+				'value' => $triggerHandle,
 			];
 		}
 
@@ -76,8 +78,6 @@ trait EventTriggers
 	public function addFieldTriggerContextOptions(array &$fields): array
 	{
 		if (!empty($this->triggerOnEvents)) {
-			$triggers = FormieIntegrationTriggers::getInstance()->triggers->getTriggers();
-
 			foreach ($fields as $field) {
 				if (!$field->options) {
 					$field->options = [
@@ -97,7 +97,7 @@ trait EventTriggers
 				}
 
 				foreach ($this->triggerOnEvents as $triggerHandle) {
-					$trigger = $triggers[$triggerHandle] ?? null;
+					$trigger = FormieIntegrationTriggers::getInstance()->triggers->getTrigger($triggerHandle);
 					if (!$trigger) {
 						continue;
 					}

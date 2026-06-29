@@ -173,11 +173,8 @@ class FormieIntegrationTriggers extends Plugin
 				}
 
 				foreach ($integration->getTriggerOnEvents() as $triggerEventClass) {
-					$trigger = $this->triggers->getTrigger($triggerEventClass);
-
-					if ($trigger) {
-						$trigger->init($integration);
-					}
+					// Get or initialize the trigger
+					$trigger = $this->triggers->getTrigger($triggerEventClass, $integration);
 				}
 			}
 		}
