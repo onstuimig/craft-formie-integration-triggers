@@ -8,6 +8,7 @@ use craft\helpers\ArrayHelper;
 use onstuimig\formieintegrationtriggers\interfaces\EventTriggersInterface;
 use onstuimig\formieintegrationtriggers\services\Triggers;
 use verbb\formie\base\Integration;
+use verbb\formie\elements\Form;
 use verbb\formie\events\IntegrationFormSettingsEvent;
 use verbb\formie\events\TriggerIntegrationEvent;
 use verbb\formie\Formie;
@@ -138,6 +139,7 @@ class FormieIntegrationTriggers extends Plugin
 
 	private function initTriggers(): void
 	{
+		/** @var Form[] $forms */
 		$forms = Formie::getInstance()->getForms()->getAllForms();
 
 		$allIntegrations = Formie::getInstance()->getIntegrations()->getAllIntegrations();
@@ -174,7 +176,7 @@ class FormieIntegrationTriggers extends Plugin
 
 				foreach ($integration->getTriggerOnEvents() as $triggerEventClass) {
 					// Get or initialize the trigger
-					$trigger = $this->triggers->getTrigger($triggerEventClass, $integration);
+					$trigger = $this->triggers->getTrigger($triggerEventClass, $integration, $form);
 				}
 			}
 		}

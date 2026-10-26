@@ -4,6 +4,7 @@ namespace onstuimig\formieintegrationtriggers\base;
 
 use craft\helpers\Queue;
 use verbb\formie\base\Integration;
+use verbb\formie\elements\Form;
 use verbb\formie\elements\Submission;
 use verbb\formie\Formie;
 use verbb\formie\jobs\TriggerIntegration;
@@ -12,15 +13,17 @@ use verbb\formie\models\Settings as FormieSettings;
 abstract class EventTrigger
 {
 	protected ?Integration $integration = null;
+	protected ?Form $form = null;
 
 	abstract public function displayName(): string;
 	// abstract public function getHandle(): string;
 
 	abstract public function setup(): void;
 
-	public function init(Integration $integration): void
+	public function init(Integration $integration, Form $form): void
 	{
-		$this->integration = $integration;
+		$this->integration = clone $integration;
+		$this->form = $form;
 
 		$this->setup();
 	}
@@ -32,6 +35,10 @@ abstract class EventTrigger
 
 	protected function sendPayload(Submission $submission, ?array $fieldData = []): void
 	{
+		if ($this->form->getCanonicalId() !== $submission->getForm()->getCanonicalId()) {
+			return;
+		}
+
 		/** @var FormieSettings $settings */
 		$settings = Formie::$plugin->getSettings();
 		

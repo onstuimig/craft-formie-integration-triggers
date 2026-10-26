@@ -5,6 +5,7 @@ namespace onstuimig\formieintegrationtriggers\services;
 use onstuimig\formieintegrationtriggers\base\EventTrigger;
 use onstuimig\formieintegrationtriggers\events\RegisterTriggersEvent;
 use verbb\formie\base\Integration;
+use verbb\formie\elements\Form;
 use yii\base\Component;
 
 /**
@@ -42,16 +43,21 @@ class Triggers extends Component
 		return $this->_triggers;
 	}
 
-	public function getTrigger(string $handle, ?Integration $integration = null): ?EventTrigger
+	public function getTrigger(string $handle, ?Integration $integration = null, ?Form $form = null): ?EventTrigger
 	{
 		$integrationHandle = '_global_';
+		$formHandle = '_global_';
 
 		if($integration) {
 			$integrationHandle = $integration->handle;
 		}
 
-		if(isset($this->_triggerObjects[$handle][$integrationHandle])) {
-			return $this->_triggerObjects[$handle][$integrationHandle];
+		if($form) {
+			$formHandle = $form->handle;
+		}
+
+		if(isset($this->_triggerObjects[$handle][$integrationHandle][$formHandle])) {
+			return $this->_triggerObjects[$handle][$integrationHandle][$formHandle];
 		}
 
 		$class = str_replace('.', '\\', $handle);
@@ -67,11 +73,11 @@ class Triggers extends Component
 			$trigger = new $class();
 
 			if($integration) {
-				$trigger->init($integration);
+				$trigger->init($integration, $form);
 			}
 		} catch (\Throwable $th) { }
 
-		$this->_triggerObjects[$handle][$integrationHandle] = $trigger;
+		$this->_triggerObjects[$handle][$integrationHandle][$formHandle] = $trigger;
 
 		return $trigger;
 	}
